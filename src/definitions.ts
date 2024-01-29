@@ -1,3 +1,7 @@
-export interface DevicePermissionsPluginPlugin {
-  echo(options: { value: string }): Promise<{ value: string }>;
+import { Observable } from "rxjs";
+
+export interface DevicePermissions { geolocation: 'denied' | 'granted'; notifications: 'denied' | 'granted' | 'prompt'; "notifications-policy": 'denied' | 'granted'; doNotDisturb: 0 | 1; }
+
+export interface DevicePermissionsPlugin {
+  monitor(): Observable<DevicePermissions>;
 }
