@@ -13,35 +13,23 @@ npx cap sync
 
 <docgen-index>
 
-* [`monitor()`](#monitor)
-* [Interfaces](#interfaces)
+* [`monitor(...)`](#monitor)
 
 </docgen-index>
 
 <docgen-api>
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
 
-### monitor()
+### monitor(...)
 
 ```typescript
-monitor() => Observable<DevicePermissions>
+monitor(callback: any) => void
 ```
 
-**Returns:** <code>Observable&lt;<a href="#devicepermissions">DevicePermissions</a>&gt;</code>
+| Param          | Type             |
+| -------------- | ---------------- |
+| **`callback`** | <code>any</code> |
 
 --------------------
-
-
-### Interfaces
-
-
-#### DevicePermissions
-
-| Prop                         | Type                                           |
-| ---------------------------- | ---------------------------------------------- |
-| **`geolocation`**            | <code>'denied' \| 'granted'</code>             |
-| **`notifications`**          | <code>'denied' \| 'granted' \| 'prompt'</code> |
-| **`"notifications-policy"`** | <code>'denied' \| 'granted'</code>             |
-| **`doNotDisturb`**           | <code>0 \| 1</code>                            |
 
 </docgen-api>
