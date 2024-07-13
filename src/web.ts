@@ -1,24 +1,33 @@
-import { WebPlugin } from '@capacitor/core';
+import { WebPlugin } from "@capacitor/core";
 
-import type { DevicePermissionsPlugin } from './definitions';
+import type { DevicePermissionsPlugin } from "./definitions";
 
-export class DevicePermissionsPluginWeb
-  extends WebPlugin
+export class DevicePermissionsWeb extends WebPlugin
   implements DevicePermissionsPlugin {
-  private PermissionNames: PermissionName[] = ["geolocation", "notifications", "push"];
+  private PermissionNames: PermissionName[] = [
+    "geolocation",
+    "notifications",
+    "push",
+  ];
 
   monitor(callback: any): void {
-    setInterval(() => {
-      Promise.all(this.PermissionNames.map((permissionName) => navigator.permissions
-        .query({ name: permissionName })
-        .then((response) => ({
-          [permissionName]: response.state,
-        }))))
-        .then((response) => response.reduce((response, permission) => {
-          response = Object.assign({}, response, permission);
-          return response;
-        }, {})).then(callback)
-    }, 5000);
-
+    this.PermissionNames.map((permissionName) =>
+      navigator.permissions
+        .query(Object.assign({ name: permissionName, userVisibleOnly: true }))
+        .then((permissionStatus) => {
+          permissionStatus.addEventListener("change", (event) => {
+            const change = {
+              [(event.target as PermissionStatus).name]: (event.target as PermissionStatus).state,
+            };
+            console.log(
+              "DevicePermissionsPlugin",
+              "Permission Changed",
+              change
+            );
+            callback(change);
+          });
+        })
+        .catch(console.error)
+    );
   }
 }

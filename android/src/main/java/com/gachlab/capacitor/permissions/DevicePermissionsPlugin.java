@@ -20,7 +20,7 @@ import java.util.TimerTask;
 
 @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
 @CapacitorPlugin(
-    name = "DevicePermissionsPlugin",
+    name = "DevicePermissions",
     permissions = {
         @Permission(
             alias = "geolocation",
@@ -36,21 +36,13 @@ import java.util.TimerTask;
 )
 public class DevicePermissionsPlugin extends Plugin {
     @PluginMethod(returnType = PluginMethod.RETURN_CALLBACK)
-    public void monitor(PluginCall call) throws Settings.SettingNotFoundException {
+    public void monitor(PluginCall call) {
         call.setKeepAlive(true);
-        new Timer().scheduleAtFixedRate(new TimerTask() {
+        new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
-                try {
                     JSObject permissionsResponse = getPermissionsState();
-                    permissionsResponse.put(
-                            "doNotDisturb",
-                            Settings.Global.getInt(getActivity().getApplicationContext().getContentResolver(), "zen_mode") == 1
-                    );
                     call.resolve(permissionsResponse);
-                } catch (Settings.SettingNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
             }
         }, 0, 10000);
     }
@@ -59,7 +51,7 @@ public class DevicePermissionsPlugin extends Plugin {
         Map<String, PermissionState> permissionsResult = getPermissionStates();
         JSObject permissionsResultJSON = new JSObject();
 
-        if (permissionsResult.size() != 0) {
+        if (!permissionsResult.isEmpty()) {
             for (Map.Entry<String, PermissionState> entry : permissionsResult.entrySet()) {
                 permissionsResultJSON.put(entry.getKey(), entry.getValue());
             }
