@@ -1,6 +1,7 @@
 {
   "name": "@gachlab/capacitor-permissions",
-  "version": "1.6.0",
+  "version": "2.0.3",
+  "type": "module",
   "description": "A plugin to monitor different permissions",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -11,7 +12,7 @@
     "android/build.gradle",
     "dist/",
     "ios/Plugin/",
-    "GachlabCapacitorPermissionsPlugin.podspec"
+    "GachlabCapacitorPermissions.podspec"
   ],
   "author": "Guillermo Carrillo",
   "license": "MIT",
@@ -38,36 +39,36 @@
     "prettier": "prettier \"**/*.{css,html,ts,js,java}\" --plugin=prettier-plugin-java",
     "swiftlint": "node-swiftlint",
     "docgen": "docgen --api DevicePermissionsPlugin --output-readme README.md --output-json dist/docs.json",
-    "build": "npm run clean && npm run docgen && tsc && rollup -c rollup.config.mjs",
+    "build": "npm run clean && npm run docgen && vite build",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
-    "@capacitor/android": "^7.0.0",
-    "@capacitor/core": "^7.0.0",
+    "@capacitor/android": "^7.4.2",
+    "@capacitor/core": "^7.4.2",
     "@capacitor/docgen": "^0.3.0",
-    "@capacitor/ios": "^7.0.0",
-    "@ionic/eslint-config": "^0.4.0",
+    "@capacitor/ios": "^7.4.2",
+    "@eslint/js": "^9.31.0",
     "@ionic/prettier-config": "^4.0.0",
     "@ionic/swiftlint-config": "^2.0.0",
-    "eslint": "^8.57.0",
-    "prettier": "^3.4.2",
-    "prettier-plugin-java": "^2.6.6",
+    "@typescript-eslint/eslint-plugin": "^8.18.1",
+    "@typescript-eslint/parser": "^8.18.1",
+    "eslint": "^9.31.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-java": "^2.7.3",
     "rimraf": "^6.0.1",
-    "rollup": "^4.30.1",
     "swiftlint": "^2.0.0",
-    "typescript": "~5.3.3",
-    "rxjs": "^7.8.1"
+    "typescript": "~5.8.3",
+    "vite": "^6.0.7",
+    "vite-plugin-dts": "^4.4.0",
+    "rxjs": "^7.8.2"
   },
   "peerDependencies": {
     "@capacitor/core": ">=7.0.0"
   },
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",
-  "eslintConfig": {
-    "extends": "@ionic/eslint-config/recommended"
-  },
   "capacitor": {
     "ios": {
       "src": "ios"

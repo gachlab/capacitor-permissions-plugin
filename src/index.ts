@@ -2,7 +2,7 @@ import { registerPlugin } from '@capacitor/core';
 
 import type { DevicePermissionsPlugin } from './definitions';
 
-const DevicePermissionsPlugin = registerPlugin<DevicePermissionsPlugin>(
+const DevicePermissions = registerPlugin<DevicePermissionsPlugin>(
   'DevicePermissions',
   {
     web: () => import('./web').then(m => new m.DevicePermissionsWeb()),
@@ -10,4 +10,4 @@ const DevicePermissionsPlugin = registerPlugin<DevicePermissionsPlugin>(
 );
 
 export * from './definitions';
-export { DevicePermissionsPlugin };
+export { DevicePermissions as DevicePermissionsPlugin };

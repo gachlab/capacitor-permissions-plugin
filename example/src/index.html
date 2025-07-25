@@ -1,27 +1,119 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" class="hydrated">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Example Capacitor App</title>
-    <meta
-      name="viewport"
-      content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <meta name="format-detection" content="telephone=no" />
-  </head>
-  <body>
-    <main>
-      <h1>Capacitor Test Plugin Project</h1>
-      <p>
-        This project can be used to test out the functionality of your plugin.
-        Nothing in the <em>example/</em> folder will be published to npm when
-        using this template, so you can create away!
-      </p>
-
-      <button onclick="testMonitor()">Test Permissions Monitor</button>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device Permissions Monitor</title>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 20px; }
+        .permission { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 10px; 
+            margin: 5px 0; 
+            border-radius: 5px; 
+            background: #f5f5f5; 
+        }
+        .status { 
+            padding: 4px 8px; 
+            border-radius: 3px; 
+            color: white; 
+            font-size: 12px; 
+        }
+        .granted { background: #4caf50; }
+        .denied { background: #f44336; }
+        .prompt { background: #ff9800; }
+        button { 
+            padding: 10px 20px; 
+            background: #2196f3; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+        }
+        #log { 
+            background: #000; 
+            color: #0f0; 
+            padding: 10px; 
+            border-radius: 5px; 
+            height: 200px; 
+            overflow-y: auto; 
+            font-family: monospace; 
+            font-size: 12px; 
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+    <h1>Device Permissions Monitor</h1>
+    <p>Real-time monitoring of device permissions. Changes are detected automatically.</p>
     
-    </main>
+    <button onclick="startMonitoring()">Start Monitoring</button>
+    <button onclick="stopMonitoring()">Stop Monitoring</button>
+    <button onclick="requestPermissions()">Request All Permissions</button>
+    
+    <h2>Permission Controls</h2>
+    <div style="margin: 15px 0;">
+        <div style="display: flex; align-items: center; margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 5px;">
+            <span style="flex: 1; font-weight: bold;">Location Permission</span>
+            <label class="switch">
+                <input type="checkbox" id="locationToggle" onchange="toggleGeolocation(this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div style="display: flex; align-items: center; margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 5px;">
+            <span style="flex: 1; font-weight: bold;">Notification Permission</span>
+            <label class="switch">
+                <input type="checkbox" id="notificationToggle" onchange="toggleNotifications(this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+    
+    <h2>Current Permissions</h2>
+    <div id="permissions"></div>
+    
+    <h2>Event Log</h2>
+    <div id="log"></div>
 
     <script src="./js/example.js" type="module"></script>
-  </body>
+</body>
 </html>

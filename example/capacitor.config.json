@@ -1,6 +1,6 @@
 {
-  "appId": "com.example.plugin",
-  "appName": "example",
+  "appId": "com.gachlab.permissions.example",
+  "appName": "Permissions Monitor",
   "webDir": "dist",
   "plugins": {
     "SplashScreen": {
