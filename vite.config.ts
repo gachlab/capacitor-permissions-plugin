@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 import dts from 'vite-plugin-dts';
 
 export default defineConfig({
@@ -12,7 +12,7 @@ export default defineConfig({
   ],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts')
+      entry: resolve(import.meta.dirname, 'src/index.ts')
     },
     rollupOptions: {
       external: ['@capacitor/core'],
