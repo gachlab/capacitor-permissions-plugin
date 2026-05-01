@@ -1,99 +1,39 @@
 import Foundation
-import CoreLocation
-import UserNotifications
+import Capacitor
 
-@objc public class DevicePermissionsImpl: NSObject, CLLocationManagerDelegate {
-    private var callback: ((([String: Any]) -> Void))?
-    private var locationManager: CLLocationManager?
-    
-    @objc public func startMonitoring(callback: @escaping ([String: Any]) -> Void) {
-        self.callback = callback
-        
-        setupLocationMonitoring()
-        setupNotificationMonitoring()
-        sendPermissionsUpdate()
-    }
-    
-    private func setupLocationMonitoring() {
-        locationManager = CLLocationManager()
-        locationManager?.delegate = self
-    }
-    
-    private func setupNotificationMonitoring() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(appDidBecomeActive),
-            name: UIApplication.didBecomeActiveNotification,
-            object: nil
-        )
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(appDidEnterBackground),
-            name: UIApplication.didEnterBackgroundNotification,
-            object: nil
-        )
-        
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(appWillEnterForeground),
-            name: UIApplication.willEnterForegroundNotification,
-            object: nil
-        )
-    }
-    
-    @objc private func appDidBecomeActive() {
-        sendPermissionsUpdate()
-    }
-    
-    @objc private func appDidEnterBackground() {
-        // Continue monitoring in background
-        sendPermissionsUpdate()
-    }
-    
-    @objc private func appWillEnterForeground() {
-        sendPermissionsUpdate()
-    }
-    
-    public func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        sendPermissionsUpdate()
-    }
-    
-    private func sendPermissionsUpdate() {
-        let permissions = getPermissionsState()
-        callback?(permissions)
-    }
-    
-    @objc public func getPermissionsState() -> [String: Any] {
-        var permissions: [String: Any] = [:]
-        
-        let locationStatus = CLLocationManager.authorizationStatus()
-        permissions["geolocation"] = (locationStatus == .authorizedAlways || locationStatus == .authorizedWhenInUse) ? "granted" : "denied"
-        
-        let semaphore = DispatchSemaphore(value: 0)
-        var notificationStatus = "denied"
-        
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            switch settings.authorizationStatus {
-            case .authorized, .provisional:
-                notificationStatus = "granted"
-            case .notDetermined:
-                notificationStatus = "prompt"
-            default:
-                notificationStatus = "denied"
-            }
-            semaphore.signal()
+@objc(DevicePermissionsPlugin)
+public class DevicePermissionsPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "DevicePermissionsPlugin"
+    public let jsName = "DevicePermissions"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "checkPermissions", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "startMonitoring", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "stopMonitoring", returnType: CAPPluginReturnPromise)
+    ]
+    private let implementation = DevicePermissionsImpl()
+
+    @objc public override func checkPermissions(_ call: CAPPluginCall) {
+        implementation.checkPermissions { permissions in
+            call.resolve(permissions)
         }
-        
-        semaphore.wait()
-        permissions["notifications"] = notificationStatus
-        permissions["notifications-policy"] = notificationStatus
-        permissions["doNotDisturb"] = 0
-        
-        return permissions
     }
-    
+
+    @objc func startMonitoring(_ call: CAPPluginCall) {
+        implementation.startMonitoring { [weak self] in
+            guard let self = self else { return }
+            self.implementation.checkPermissions { permissions in
+                self.notifyListeners("permissionChange", data: permissions)
+            }
+        }
+        call.resolve()
+    }
+
+    @objc func stopMonitoring(_ call: CAPPluginCall) {
+        implementation.stopMonitoring()
+        call.resolve()
+    }
+
     deinit {
-        NotificationCenter.default.removeObserver(self)
+        implementation.stopMonitoring()
     }
 }

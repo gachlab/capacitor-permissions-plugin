@@ -10,4 +10,4 @@ const DevicePermissions = registerPlugin<DevicePermissionsPlugin>(
 );
 
 export * from './definitions';
-export { DevicePermissions as DevicePermissionsPlugin };
+export { DevicePermissions };

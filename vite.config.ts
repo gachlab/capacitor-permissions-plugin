@@ -3,42 +3,26 @@ import { resolve } from 'node:path';
 import dts from 'vite-plugin-dts';
 
 export default defineConfig({
-  plugins: [
-    dts({
-      insertTypesEntry: true,
-      outDir: 'dist/esm',
-      include: ['src/**/*']
-    })
-  ],
+  plugins: [dts({ rollupTypes: true, outDir: 'dist/esm' })],
   build: {
     lib: {
-      entry: resolve(import.meta.dirname, 'src/index.ts')
+      entry: resolve(import.meta.dirname, 'src/index.ts'),
+      name: 'capacitorDevicePermissions',
+      formats: ['es', 'cjs', 'iife'],
+      fileName: (format) => {
+        if (format === 'es') return 'esm/index.js';
+        if (format === 'cjs') return 'plugin.cjs.js';
+        return 'plugin.js';
+      },
     },
     rollupOptions: {
       external: ['@capacitor/core'],
-      output: [
-        {
-          format: 'es',
-          entryFileNames: 'esm/index.js',
-          chunkFileNames: 'esm/[name].js'
+      output: {
+        globals: {
+          '@capacitor/core': 'capacitorExports',
         },
-        {
-          format: 'cjs',
-          entryFileNames: 'plugin.cjs.js',
-          inlineDynamicImports: true
-        },
-        {
-          format: 'iife',
-          entryFileNames: 'plugin.js',
-          name: 'capacitorDevicePermissionsPlugin',
-          globals: {
-            '@capacitor/core': 'capacitorExports'
-          },
-          inlineDynamicImports: true
-        }
-      ]
+      },
     },
     sourcemap: true,
-    outDir: 'dist'
-  }
+  },
 });

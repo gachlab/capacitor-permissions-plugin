@@ -1,75 +1,75 @@
-import { WebPlugin } from "@capacitor/core";
-import type { DevicePermissionsPlugin } from "./definitions";
+import { WebPlugin } from '@capacitor/core';
+
+import type { DevicePermissionsPlugin, PermissionState, PermissionStatus } from './definitions';
 
 export class DevicePermissionsWeb extends WebPlugin implements DevicePermissionsPlugin {
-  private callback: any;
-  private backgroundInterval?: number;
+  private monitoring = false;
+  private intervalId?: ReturnType<typeof setInterval>;
 
-  monitor(callback: any): void {
-    this.callback = callback;
-    
-    // Monitor geolocation
-    navigator.permissions.query({ name: 'geolocation' }).then(status => {
-      status.addEventListener('change', () => this.sendUpdate());
-      this.sendUpdate();
-    }).catch(() => {});
-
-    // Monitor notifications
-    navigator.permissions.query({ name: 'notifications' }).then(status => {
-      status.addEventListener('change', () => this.sendUpdate());
-    }).catch(() => {});
-    
-    // Background monitoring
-    this.setupBackgroundMonitoring();
+  async checkPermissions(): Promise<PermissionStatus> {
+    return {
+      geolocation: await this.queryPermission('geolocation'),
+      notifications: await this.queryPermission('notifications'),
+      notificationsPolicy: await this.queryPermission('notifications'),
+    };
   }
 
-  private async sendUpdate() {
-    const permissions: any = {};
-    
-    try {
-      const geo = await navigator.permissions.query({ name: 'geolocation' });
-      permissions.geolocation = geo.state === 'granted' ? 'granted' : 'denied';
-    } catch { permissions.geolocation = 'denied'; }
+  async startMonitoring(): Promise<void> {
+    if (this.monitoring) return;
+    this.monitoring = true;
 
-    try {
-      const notif = await navigator.permissions.query({ name: 'notifications' });
-      permissions.notifications = notif.state;
-      permissions['notifications-policy'] = notif.state;
-    } catch { 
-      permissions.notifications = 'denied';
-      permissions['notifications-policy'] = 'denied';
+    // Listen for visibility changes to re-check on tab focus
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', this.onVisibilityChange);
     }
 
-    permissions.doNotDisturb = 0;
-    this.callback(permissions);
-  }
-  
-  private setupBackgroundMonitoring() {
-    // Page Visibility API for background detection
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        this.sendUpdate();
+    // Listen for native permission change events
+    for (const name of ['geolocation', 'notifications'] as PermissionName[]) {
+      try {
+        const status = await navigator.permissions.query({ name });
+        status.addEventListener('change', this.onPermissionChange);
+      } catch {
+        // Permission not supported in this browser
       }
-    });
-    
-    // Periodic background check
-    this.backgroundInterval = window.setInterval(() => {
-      this.sendUpdate();
-    }, 30000); // Check every 30 seconds
-    
-    // Service Worker support if available
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('message', (event) => {
-        if (event.data.type === 'PERMISSION_CHECK') {
-          this.sendUpdate();
-        }
-      });
+    }
+
+    // Periodic fallback check
+    this.intervalId = setInterval(() => this.emitUpdate(), 30000);
+  }
+
+  async stopMonitoring(): Promise<void> {
+    this.monitoring = false;
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = undefined;
+    }
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', this.onVisibilityChange);
     }
   }
-  
-  destroy() {
-    if (this.backgroundInterval) {
-      clearInterval(this.backgroundInterval);
+
+  private onVisibilityChange = (): void => {
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+      this.emitUpdate();
+    }
+  };
+
+  private onPermissionChange = (): void => {
+    this.emitUpdate();
+  };
+
+  private async emitUpdate(): Promise<void> {
+    if (!this.monitoring) return;
+    const status = await this.checkPermissions();
+    this.notifyListeners('permissionChange', status);
+  }
+
+  private async queryPermission(name: string): Promise<PermissionState> {
+    try {
+      const result = await navigator.permissions.query({ name: name as PermissionName });
+      return result.state as PermissionState;
+    } catch {
+      return 'denied';
     }
   }
 }
