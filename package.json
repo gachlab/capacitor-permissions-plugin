@@ -71,6 +71,9 @@
   "peerDependencies": {
     "@capacitor/core": "^8.0.1"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "prettier": "@ionic/prettier-config",
   "swiftlint": "@ionic/swiftlint-config",
   "capacitor": {

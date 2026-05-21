@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Bug Fixes
+
+- **Web:** Fixed listener leak — `startMonitoring()` registered `'change'` listeners on each `PermissionStatus` from `navigator.permissions.query()` but `stopMonitoring()` only detached the `visibilitychange` handler. Repeated start/stop cycles accumulated permission listeners. Now `stopMonitoring()` removes them via a tracked references list.
+- **Build:** Fixed empty `dist/esm/index.d.ts` — `vite-plugin-dts` with `rollupTypes: true` produced an empty types bundle under TypeScript 6 (its internal API Extractor uses TS 5.x and silently dropped all declarations). Removed `rollupTypes` and set `tsconfig.json` `rootDir: "src"` so per-file `.d.ts` files land flat at `dist/esm/` and consumers actually get types instead of `any`.
+
+### Improvements
+
+- iOS Swift version aligned: `GachlabCapacitorPermissions.podspec` now declares `swift_version = '5.9'` to match `Package.swift`'s `swift-tools-version: 5.9` (was `5.1`).
+- iOS dependency pinned: `Package.swift` now uses `.upToNextMajor(from: "8.0.0")` for `capacitor-swift-pm` instead of `branch: "main"`, so released versions get a stable, reproducible dependency.
+- Added `publishConfig.access: public` to `package.json`.
+
 ## 3.0.0
 
 ### Breaking Changes

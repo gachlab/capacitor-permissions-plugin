@@ -3,7 +3,13 @@ import { resolve } from 'node:path';
 import dts from 'vite-plugin-dts';
 
 export default defineConfig({
-  plugins: [dts({ rollupTypes: true, outDir: 'dist/esm' })],
+  plugins: [
+    dts({
+      outDir: 'dist/esm',
+      include: ['src/**/*.ts'],
+      exclude: ['**/__tests__/**', '**/*.test.ts'],
+    }),
+  ],
   build: {
     lib: {
       entry: resolve(import.meta.dirname, 'src/index.ts'),

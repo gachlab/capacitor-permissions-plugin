@@ -1,12 +1,17 @@
 import { WebPlugin } from '@capacitor/core';
 
-import type { DevicePermissionsPlugin, PermissionState, PermissionStatus } from './definitions';
+import type {
+  DevicePermissionsPlugin,
+  PermissionState,
+  PermissionStatus as PluginPermissionStatus,
+} from './definitions';
 
 export class DevicePermissionsWeb extends WebPlugin implements DevicePermissionsPlugin {
   private monitoring = false;
   private intervalId?: ReturnType<typeof setInterval>;
+  private trackedStatuses: PermissionStatus[] = [];
 
-  async checkPermissions(): Promise<PermissionStatus> {
+  async checkPermissions(): Promise<PluginPermissionStatus> {
     return {
       geolocation: await this.queryPermission('geolocation'),
       notifications: await this.queryPermission('notifications'),
@@ -23,11 +28,13 @@ export class DevicePermissionsWeb extends WebPlugin implements DevicePermissions
       document.addEventListener('visibilitychange', this.onVisibilityChange);
     }
 
-    // Listen for native permission change events
+    // Listen for native permission change events. Keep refs so stopMonitoring
+    // can detach them — otherwise repeated start/stop cycles leak listeners.
     for (const name of ['geolocation', 'notifications'] as PermissionName[]) {
       try {
         const status = await navigator.permissions.query({ name });
         status.addEventListener('change', this.onPermissionChange);
+        this.trackedStatuses.push(status);
       } catch {
         // Permission not supported in this browser
       }
@@ -46,6 +53,10 @@ export class DevicePermissionsWeb extends WebPlugin implements DevicePermissions
     if (typeof document !== 'undefined') {
       document.removeEventListener('visibilitychange', this.onVisibilityChange);
     }
+    for (const status of this.trackedStatuses) {
+      status.removeEventListener('change', this.onPermissionChange);
+    }
+    this.trackedStatuses = [];
   }
 
   private onVisibilityChange = (): void => {
