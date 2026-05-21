@@ -3,10 +3,8 @@ package com.gachlab.capacitor.permissions;
 import static org.junit.Assert.*;
 
 import com.getcapacitor.PermissionState;
-
-import org.junit.Test;
-
 import java.lang.reflect.Method;
+import org.junit.Test;
 
 public class DevicePermissionsPluginTest {
 

@@ -2,7 +2,6 @@ package com.gachlab.capacitor.permissions;
 
 import android.Manifest;
 import android.os.Build;
-
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
@@ -10,7 +9,6 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
-
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -20,10 +18,7 @@ import java.util.TimerTask;
     permissions = {
         @Permission(
             alias = "geolocation",
-            strings = {
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            }
+            strings = { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION }
         ),
         @Permission(alias = "notifications", strings = {}),
         @Permission(alias = "notificationsPolicy", strings = { Manifest.permission.ACCESS_NOTIFICATION_POLICY })
@@ -42,12 +37,16 @@ public class DevicePermissionsPlugin extends Plugin {
     public void startMonitoring(PluginCall call) {
         stopTimer();
         monitorTimer = new Timer();
-        monitorTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                notifyListeners("permissionChange", buildPermissionsResponse());
-            }
-        }, 0, 10000);
+        monitorTimer.schedule(
+            new TimerTask() {
+                @Override
+                public void run() {
+                    notifyListeners("permissionChange", buildPermissionsResponse());
+                }
+            },
+            0,
+            10000
+        );
         call.resolve();
     }
 
@@ -77,9 +76,12 @@ public class DevicePermissionsPlugin extends Plugin {
     private String stateToString(PermissionState state) {
         if (state == null) return "prompt";
         switch (state) {
-            case GRANTED: return "granted";
-            case DENIED: return "denied";
-            default: return "prompt";
+            case GRANTED:
+                return "granted";
+            case DENIED:
+                return "denied";
+            default:
+                return "prompt";
         }
     }
 
