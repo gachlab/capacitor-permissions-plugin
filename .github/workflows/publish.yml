@@ -1,29 +1,42 @@
 name: Publish
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
 
 jobs:
-  publish:
+  test:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
-          registry-url: https://registry.npmjs.org
       - run: npm ci
-      - run: npm test
       - run: npm run build
-      - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - uses: softprops/action-gh-release@v2
+      - run: npm test
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          generate_release_notes: true
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      # Trusted publishing for auth (not just provenance) requires npm >= 11.5.1.
+      # Node 22 LTS ships with npm 10.x, so upgrade explicitly.
+      - run: npm install --global npm@latest
+      - run: npm --version
+      - run: npm ci
+      - run: npm run build
+      # Auth + provenance both via OIDC; Trusted Publisher must be set up at
+      # https://www.npmjs.com/package/@gachlab/capacitor-permissions/access
+      # → no NODE_AUTH_TOKEN needed.
+      - run: npm publish --access public --provenance
