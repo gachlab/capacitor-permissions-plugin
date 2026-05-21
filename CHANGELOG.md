@@ -2,7 +2,15 @@
 
 ## Unreleased
 
-## 3.0.1 (2026-05-21)
+## 3.0.2 (2026-05-21)
+
+### CI
+
+- Publish workflow: install `npm@latest` into `$RUNNER_TEMP/npm-latest` via `--prefix` instead of `--global` to avoid the bundled npm overwriting itself mid-install. The v3.0.1 release attempt failed three reruns in a row with `Cannot find module 'promise-retry'` while upgrading the runner's globally-installed npm; the isolated-prefix approach sidesteps that path entirely.
+
+## 3.0.1 (2026-05-21) — never published
+
+> Failed to publish to npm because the `npm install -g npm@latest` step in the publish workflow corrupted the runner's globally-installed npm. The 3.0.1 release was created on GitHub (tag exists) but never reached the npm registry. All changes below ship in [`3.0.2`](#302-2026-05-21).
 
 ### Bug Fixes
 
