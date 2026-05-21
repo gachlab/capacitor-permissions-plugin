@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.0.1 (2026-05-21)
+
 ### Bug Fixes
 
 - **Web:** Fixed listener leak — `startMonitoring()` registered `'change'` listeners on each `PermissionStatus` from `navigator.permissions.query()` but `stopMonitoring()` only detached the `visibilitychange` handler. Repeated start/stop cycles accumulated permission listeners. Now `stopMonitoring()` removes them via a tracked references list.
