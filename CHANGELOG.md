@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Build
+
+- Bumped Android Gradle Plugin `8.13.0` → `9.2.1` and Gradle wrapper `8.14.3` → `9.5.1` so the plugin's own CI builds against the same AGP major (9.x) that consumer apps use. No consumer-facing change — consuming apps apply their own root AGP at build time. Closes #1.
+
 ## 3.0.2 (2026-05-21)
 
 ### CI
