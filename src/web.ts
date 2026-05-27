@@ -2,6 +2,7 @@ import { WebPlugin } from '@capacitor/core';
 
 import type {
   DevicePermissionsPlugin,
+  PermissionChange,
   PermissionState,
   PermissionStatus as PluginPermissionStatus,
 } from './definitions';
@@ -10,6 +11,7 @@ export class DevicePermissionsWeb extends WebPlugin implements DevicePermissions
   private monitoring = false;
   private intervalId?: ReturnType<typeof setInterval>;
   private trackedStatuses: PermissionStatus[] = [];
+  private lastStatus?: PluginPermissionStatus;
 
   async checkPermissions(): Promise<PluginPermissionStatus> {
     return {
@@ -22,6 +24,10 @@ export class DevicePermissionsWeb extends WebPlugin implements DevicePermissions
   async startMonitoring(): Promise<void> {
     if (this.monitoring) return;
     this.monitoring = true;
+
+    // Seed the baseline so the first real change is detected (and we don't emit
+    // a spurious "everything changed" event on start).
+    this.lastStatus = await this.checkPermissions();
 
     // Listen for visibility changes to re-check on tab focus
     if (typeof document !== 'undefined') {
@@ -57,6 +63,7 @@ export class DevicePermissionsWeb extends WebPlugin implements DevicePermissions
       status.removeEventListener('change', this.onPermissionChange);
     }
     this.trackedStatuses = [];
+    this.lastStatus = undefined;
   }
 
   private onVisibilityChange = (): void => {
@@ -71,8 +78,30 @@ export class DevicePermissionsWeb extends WebPlugin implements DevicePermissions
 
   private async emitUpdate(): Promise<void> {
     if (!this.monitoring) return;
-    const status = await this.checkPermissions();
-    this.notifyListeners('permissionChange', status);
+    const current = await this.checkPermissions();
+    const previous = this.lastStatus;
+    this.lastStatus = current;
+    if (!previous) return;
+
+    const changes = this.diff(previous, current);
+    if (changes.length === 0) return;
+
+    this.notifyListeners('permissionChange', {
+      ...current,
+      timestamp: Date.now(),
+      changes,
+    });
+  }
+
+  private diff(previous: PluginPermissionStatus, current: PluginPermissionStatus): PermissionChange[] {
+    const keys: (keyof PluginPermissionStatus)[] = ['geolocation', 'notifications', 'notificationsPolicy'];
+    const changes: PermissionChange[] = [];
+    for (const key of keys) {
+      if (previous[key] !== current[key]) {
+        changes.push({ permission: key, from: previous[key], to: current[key] });
+      }
+    }
+    return changes;
   }
 
   private async queryPermission(name: string): Promise<PermissionState> {

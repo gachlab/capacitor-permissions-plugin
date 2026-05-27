@@ -21,9 +21,12 @@ const status = await DevicePermissions.checkPermissions();
 console.log('Geolocation:', status.geolocation);
 console.log('Notifications:', status.notifications);
 
-// Listen for permission changes
-await DevicePermissions.addListener('permissionChange', (status) => {
-  console.log('Permissions changed:', status);
+// Listen for permission changes (fires only when something actually changes)
+await DevicePermissions.addListener('permissionChange', (event) => {
+  console.log('Permissions changed at', new Date(event.timestamp));
+  for (const change of event.changes) {
+    console.log(`${change.permission}: ${change.from} -> ${change.to}`);
+  }
 });
 
 // Start monitoring (emits permissionChange events)
@@ -75,9 +78,11 @@ Stops monitoring permissions and cleans up timers/listeners.
 ```typescript
 addListener(
   eventName: 'permissionChange',
-  listenerFunc: (status: PermissionStatus) => void,
+  listenerFunc: (event: PermissionChangeEvent) => void,
 ) => Promise<PluginListenerHandle>
 ```
+
+Fires **only when at least one permission actually changed** (no longer on every poll tick). The payload is the full current `PermissionStatus` plus `timestamp` (epoch ms) and `changes` (the permissions that changed), for audit logging.
 
 ---
 
@@ -96,6 +101,17 @@ interface PermissionStatus {
   geolocation: PermissionState;
   notifications: PermissionState;
   notificationsPolicy: PermissionState;
+}
+
+interface PermissionChange {
+  permission: 'geolocation' | 'notifications' | 'notificationsPolicy';
+  from: PermissionState;
+  to: PermissionState;
+}
+
+interface PermissionChangeEvent extends PermissionStatus {
+  timestamp: number;
+  changes: PermissionChange[];
 }
 ```
 
