@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.1.2 (2026-05-28)
+
 ### Bug Fixes
 
 - **Packaging:** Node ESM consumers failed to import the package with `SyntaxError: exports is not defined in ES module scope`. The CJS bundle was emitted as `dist/plugin.cjs.js` (`.js` extension), and because `package.json` declares `"type": "module"`, Node parsed it as ESM and rejected its CommonJS syntax. Renamed the CJS output to `dist/plugin.cjs` (matches the existing convention used by the web chunk), pointed `"main"` at it, and added an `"exports"` field with conditional `import`/`require` so resolvers no longer fall through `main` ambiguously. Closes #10.
@@ -10,6 +12,11 @@
 
 - Bumped Android Gradle Plugin `8.13.0` → `9.2.1` and Gradle wrapper `8.14.3` → `9.5.1` so the plugin's own CI builds against the same AGP major (9.x) that consumer apps use. No consumer-facing change — consuming apps apply their own root AGP at build time. Closes #1.
 - Refreshed `@capacitor/*` toolchain in the lockfile to `8.3.4` (was `8.0.1`). The bundled `@capacitor/android@8.0.1` build script still referenced `proguard-android.txt`, which AGP 9 rejects when compiling the `:capacitor-android` module. Lockfile only — `^8.0.1` spec unchanged.
+
+### CI
+
+- Moved the iOS job from `macos-15` (GitHub-hosted) to the same self-hosted Mac Mini that already runs Android e2e. Eliminates the recurring Swift Package Manager cache-stale flake (`Cordova.xcframework.zip already exists in file system`) — that cache lives at `~/Library/Caches/org.swift.swiftpm` and stays hot between runs on a persistent runner. Wall-time iOS dropped from ~7m41s to ~2m12s on the same workload.
+- iOS e2e script (`e2e-ios-permissions.sh`) now defaults to a substring match (`"iPhone"`) instead of hard-coding `"iPhone 16"`, so the simulator selector picks whatever model is installed on the runner. The Python selector already iterates runtimes newest-first; the substring is the looser of two filters. Override with `SIMULATOR_NAME=…` if a specific model is required.
 
 ## 3.0.2 (2026-05-21)
 

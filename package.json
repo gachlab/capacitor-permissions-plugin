@@ -1,6 +1,6 @@
 {
   "name": "@gachlab/capacitor-permissions",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "Capacitor plugin to monitor device permission states (geolocation, notifications) across Android, iOS, and Web.",
   "type": "module",
   "main": "./dist/plugin.cjs",
