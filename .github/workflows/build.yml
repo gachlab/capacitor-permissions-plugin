@@ -87,10 +87,18 @@ jobs:
 
   ios:
     name: iOS — unit + e2e
-    runs-on: macos-15
+    # Mismo runner que Android — Mac Mini arm64 con Xcode + simulators
+    # locales. Antes corría en `macos-15` GitHub-hosted, que tenía dos
+    # problemas: cold simulator boot ~3 min y cache stale del Swift Package
+    # Manager (`Cordova.xcframework.zip already exists in file system`)
+    # cuando un run previo fallaba dejando el caché a mitad. Self-hosted
+    # mantiene el SPM caché caliente y persistente entre runs.
+    runs-on: [self-hosted, mac-mini]
     timeout-minutes: 60
     needs: web
     steps:
+      - name: Setup PATH
+        run: echo "/opt/homebrew/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
