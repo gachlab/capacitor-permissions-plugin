@@ -21,6 +21,6 @@ export default [
     },
   },
   {
-    ignores: ['dist/', 'node_modules/', 'android/', 'ios/', 'example/'],
+    ignores: ['dist/', 'node_modules/', 'android/', 'ios/', 'example-app/'],
   },
 ];

@@ -11,6 +11,7 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -28,10 +29,9 @@ import java.util.TimerTask;
 )
 public class DevicePermissionsPlugin extends Plugin {
 
-    private static final String[] PERMISSION_KEYS = { "geolocation", "notifications", "notificationsPolicy" };
-
     private Timer monitorTimer;
     private Map<String, String> previousStates;
+    private final PermissionDiffEngine diffEngine = new PermissionDiffEngine();
 
     @PluginMethod
     public void checkPermissions(PluginCall call) {
@@ -60,31 +60,22 @@ public class DevicePermissionsPlugin extends Plugin {
 
     private void emitIfChanged() {
         Map<String, String> current = currentStates();
-        JSArray changes = computeChanges(previousStates, current);
+        List<PermissionDiffEngine.Change> changes = diffEngine.diff(previousStates, current);
         previousStates = current;
-        if (changes.length() == 0) return;
+        if (changes.isEmpty()) return;
 
         JSObject ret = buildPermissionsResponse();
         ret.put("timestamp", System.currentTimeMillis());
-        ret.put("changes", changes);
-        notifyListeners("permissionChange", ret);
-    }
-
-    private JSArray computeChanges(Map<String, String> previous, Map<String, String> current) {
-        JSArray changes = new JSArray();
-        if (previous == null) return changes;
-        for (String key : PERMISSION_KEYS) {
-            String from = previous.get(key);
-            String to = current.get(key);
-            if (from != null && !from.equals(to)) {
-                JSObject change = new JSObject();
-                change.put("permission", key);
-                change.put("from", from);
-                change.put("to", to);
-                changes.put(change);
-            }
+        JSArray changesArr = new JSArray();
+        for (PermissionDiffEngine.Change change : changes) {
+            JSObject obj = new JSObject();
+            obj.put("permission", change.permission);
+            obj.put("from", change.from);
+            obj.put("to", change.to);
+            changesArr.put(obj);
         }
-        return changes;
+        ret.put("changes", changesArr);
+        notifyListeners("permissionChange", ret);
     }
 
     @PluginMethod
