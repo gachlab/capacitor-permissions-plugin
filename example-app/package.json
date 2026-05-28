@@ -1,0 +1,20 @@
+{
+  "name": "capacitor-permissions-example",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal Capacitor 8 host app exercising @gachlab/capacitor-permissions (used by the e2e harness).",
+  "scripts": {
+    "sync": "cap sync",
+    "open:android": "cap open android",
+    "open:ios": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/ios": "^8.0.0",
+    "@gachlab/capacitor-permissions": "file:.."
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.0"
+  }
+}

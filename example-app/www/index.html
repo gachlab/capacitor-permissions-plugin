@@ -1,0 +1,32 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: MIT -->
+<!-- Copyright (c) 2026 gachlab -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Permissions Example</title>
+    <style>
+      body { font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 16px; }
+      h1 { font-size: 1.1rem; margin: 0 0 12px; }
+      button { display: inline-block; margin: 4px 4px 4px 0; padding: 8px 12px; font-size: 14px; }
+      #log { background: #111; color: #eee; padding: 8px; height: 55vh; overflow: auto; font-family: monospace; font-size: 12px; white-space: pre-wrap; }
+      .row { margin-bottom: 8px; }
+    </style>
+  </head>
+  <body>
+    <h1>@gachlab/capacitor-permissions</h1>
+    <div class="row">
+      geolocation: <span data-testid="geolocation-state">unknown</span>
+      &nbsp;|&nbsp;
+      Last event: <span data-testid="last-event">—</span>
+    </div>
+    <div class="row">
+      <button id="check">checkPermissions</button>
+      <button id="start">startMonitoring</button>
+      <button id="stop">stopMonitoring</button>
+    </div>
+    <div id="log"></div>
+    <script src="./main.js"></script>
+  </body>
+</html>
