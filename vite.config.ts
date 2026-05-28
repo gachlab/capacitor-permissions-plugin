@@ -17,7 +17,11 @@ export default defineConfig({
       formats: ['es', 'cjs', 'iife'],
       fileName: (format) => {
         if (format === 'es') return 'esm/index.js';
-        if (format === 'cjs') return 'plugin.cjs.js';
+        // .cjs extension is mandatory: package.json declares `"type": "module"`,
+        // so Node treats any `.js` file as ESM and rejects CommonJS syntax with
+        // "exports is not defined in ES module scope". The web chunk already
+        // ships as `.cjs`; this aligns the main entry with that convention.
+        if (format === 'cjs') return 'plugin.cjs';
         return 'plugin.js';
       },
     },

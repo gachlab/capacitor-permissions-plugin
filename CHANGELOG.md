@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Bug Fixes
+
+- **Packaging:** Node ESM consumers failed to import the package with `SyntaxError: exports is not defined in ES module scope`. The CJS bundle was emitted as `dist/plugin.cjs.js` (`.js` extension), and because `package.json` declares `"type": "module"`, Node parsed it as ESM and rejected its CommonJS syntax. Renamed the CJS output to `dist/plugin.cjs` (matches the existing convention used by the web chunk), pointed `"main"` at it, and added an `"exports"` field with conditional `import`/`require` so resolvers no longer fall through `main` ambiguously. Closes #10.
+
 ### Build
 
 - Bumped Android Gradle Plugin `8.13.0` → `9.2.1` and Gradle wrapper `8.14.3` → `9.5.1` so the plugin's own CI builds against the same AGP major (9.x) that consumer apps use. No consumer-facing change — consuming apps apply their own root AGP at build time. Closes #1.
