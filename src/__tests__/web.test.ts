@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, beforeEach, afterEach, mock } from 'node:test';
+import assert from 'node:assert/strict';
 import { DevicePermissionsWeb } from '../web';
 import type { PermissionChangeEvent, PermissionState } from '../definitions';
 
@@ -16,50 +17,52 @@ describe('DevicePermissionsWeb', () => {
   describe('checkPermissions', () => {
     it('returns all permission fields', async () => {
       const result = await plugin.checkPermissions();
-      expect(result).toHaveProperty('geolocation');
-      expect(result).toHaveProperty('notifications');
-      expect(result).toHaveProperty('notificationsPolicy');
+      assert.ok('geolocation' in Object(result));
+      assert.ok('notifications' in Object(result));
+      assert.ok('notificationsPolicy' in Object(result));
     });
 
     it('returns valid PermissionState values', async () => {
       const result = await plugin.checkPermissions();
       const validStates = ['granted', 'denied', 'prompt'];
-      expect(validStates).toContain(result.geolocation);
-      expect(validStates).toContain(result.notifications);
-      expect(validStates).toContain(result.notificationsPolicy);
+      assert.ok(validStates.includes(result.geolocation));
+      assert.ok(validStates.includes(result.notifications));
+      assert.ok(validStates.includes(result.notificationsPolicy));
     });
   });
 
   describe('startMonitoring', () => {
     it('resolves without error', async () => {
-      await expect(plugin.startMonitoring()).resolves.toBeUndefined();
+      assert.strictEqual(await plugin.startMonitoring(), undefined);
     });
 
     it('calling twice does not throw', async () => {
       await plugin.startMonitoring();
-      await expect(plugin.startMonitoring()).resolves.toBeUndefined();
+      assert.strictEqual(await plugin.startMonitoring(), undefined);
     });
   });
 
   describe('stopMonitoring', () => {
     it('resolves without error', async () => {
-      await expect(plugin.stopMonitoring()).resolves.toBeUndefined();
+      assert.strictEqual(await plugin.stopMonitoring(), undefined);
     });
 
     it('stops after start without error', async () => {
       await plugin.startMonitoring();
-      await expect(plugin.stopMonitoring()).resolves.toBeUndefined();
+      assert.strictEqual(await plugin.stopMonitoring(), undefined);
     });
   });
 
   describe('permissionChange events', () => {
     let states: Record<string, PermissionState>;
     let changeHandlers: Record<string, (() => void) | undefined>;
+    let originalNavigator: typeof globalThis.navigator;
 
     beforeEach(() => {
+      originalNavigator = globalThis.navigator;
       states = { geolocation: 'granted', notifications: 'granted' };
       changeHandlers = {};
-      const query = vi.fn(async ({ name }: { name: string }) => ({
+      const query = mock.fn(async ({ name }: { name: string }) => ({
         get state() {
           return states[name];
         },
@@ -68,11 +71,19 @@ describe('DevicePermissionsWeb', () => {
         },
         removeEventListener: () => undefined,
       }));
-      vi.stubGlobal('navigator', { permissions: { query } });
+      Object.defineProperty(globalThis, 'navigator', {
+        value: { permissions: { query } },
+        writable: true,
+        configurable: true,
+      });
     });
 
     afterEach(() => {
-      vi.unstubAllGlobals();
+      Object.defineProperty(globalThis, 'navigator', {
+        value: originalNavigator,
+        writable: true,
+        configurable: true,
+      });
     });
 
     const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -86,10 +97,10 @@ describe('DevicePermissionsWeb', () => {
       changeHandlers.geolocation?.();
       await flush();
 
-      expect(events).toHaveLength(1);
-      expect(events[0].geolocation).toBe('denied');
-      expect(events[0].changes).toEqual([{ permission: 'geolocation', from: 'granted', to: 'denied' }]);
-      expect(typeof events[0].timestamp).toBe('number');
+      assert.strictEqual(events.length, 1);
+      assert.strictEqual(events[0].geolocation, 'denied');
+      assert.deepStrictEqual(events[0].changes, [{ permission: 'geolocation', from: 'granted', to: 'denied' }]);
+      assert.strictEqual(typeof events[0].timestamp, 'number');
     });
 
     it('does not emit when nothing actually changed', async () => {
@@ -100,7 +111,7 @@ describe('DevicePermissionsWeb', () => {
       changeHandlers.geolocation?.();
       await flush();
 
-      expect(events).toHaveLength(0);
+      assert.strictEqual(events.length, 0);
     });
   });
 });
