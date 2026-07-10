@@ -1,0 +1,9 @@
+{
+  "appId": "com.gachlab.capacitor.permissions.example",
+  "appName": "Permissions Example",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  }
+}

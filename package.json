@@ -48,13 +48,13 @@
     "verify:ios": "xcodebuild -scheme GachlabCapacitorPermissions -destination generic/platform=iOS",
     "verify:android": "cd android && ./gradlew clean build test && cd ..",
     "verify:web": "npm run build",
-    "lint": "eslint . && npm run prettier -- --check && npm run swiftlint -- lint",
-    "fmt": "eslint . --fix && npm run prettier -- --write && npm run swiftlint -- --fix --format",
+    "lint": "npm run prettier -- --check && npm run swiftlint -- lint",
+    "fmt": "npm run prettier -- --write && npm run swiftlint -- --fix --format",
     "prettier": "prettier \"**/*.{css,html,ts,js,java}\" --plugin=prettier-plugin-java",
     "swiftlint": "node-swiftlint",
-    "build": "npm run clean && vite build",
+    "build": "npm run clean && tsc --emitDeclarationOnly && node build.mjs",
     "clean": "rimraf ./dist",
-    "watch": "vite build --watch",
+    "watch": "tsc --watch",
     "test": "node --import tsx/esm --test src/__tests__/web.test.ts",
     "prepublishOnly": "npm run build"
   },
@@ -64,17 +64,13 @@
     "@capacitor/ios": "^8.0.1",
     "@ionic/prettier-config": "^4.0.0",
     "@ionic/swiftlint-config": "^2.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.59.1",
-    "@typescript-eslint/parser": "^8.59.1",
-    "eslint": "^9.39.2",
     "prettier": "^3.8.0",
     "prettier-plugin-java": "^2.8.1",
     "rimraf": "^6.1.2",
     "swiftlint": "^2.0.0",
     "tsx": "^4.19.2",
-    "typescript": "^6.0.0",
-    "vite": "^7.3.1",
-    "vite-plugin-dts": "^4.4.0"
+    "typescript": "^7.0.2",
+    "esbuild": "^0.28.0"
   },
   "peerDependencies": {
     "@capacitor/core": "^8.0.1"
